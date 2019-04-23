@@ -1,0 +1,68 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+
+    <h3>Insert amount in Eur:</h3>
+
+        <input type="text"  id="input" style="font-size: 30px;">
+    
+    <h3 id="result"></h3>
+
+    <script>
+        $("input").change(function () {
+            fetch("https://api.exchangeratesapi.io/latest") // returns a promise
+                .then(filterResults)   // tell promise to call fulterResults  if resolved
+                .then(processResults)  // tell promise to call processResults if resolved
+                .catch(handleError);   // tell promise to call handleError if rejected
+        });
+
+        function filterResults(data) {
+            return new Promise(function (resolve, reject) {
+                console.log(data.rates);
+                Object.entries(data.rates).forEach(ent => {
+                    if (ent[0] != 'USD') {
+                        delete data.rates[ent[0]];
+                    }
+                });
+                console.log(data.rates);
+                resolve(data);
+            });
+        }
+
+        function fetch(url) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: 'json',
+                    success: resolve,
+                    error: reject // promise will be rejected
+                });
+            });
+        }
+
+        function handleError(err) {
+            console.log(err.statusText);
+            alert(err.statusText);
+        }
+
+        function processResults(data) {
+            console.log('data results:');
+            console.log(data.rates);
+            var input = $('input').val();
+            $("#result").html(input + ' EUR <br>');
+
+            Object.entries(data.rates).forEach(ent => {
+                var total = ent[1] * input;
+                $("#result").append(total + ' ' + ent[0] + '<br>');
+            });
+        }
+    </script>
+</body>
+
+</html>
